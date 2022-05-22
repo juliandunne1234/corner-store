@@ -19,21 +19,29 @@ def open_shop():
     2) Input customer order
     3) Complete existing customer order
     """
-    print("---CORNER STORE---")
-    print("Please choose number 1-3 to proceed")
+    print("\t---CORNER STORE---")
+    print("\nPlease choose number 1-3 to proceed")
     print("1) Current stock inventory")
     print("2) Create new Customer Order")
     print("3) Execute existing costomer order")
-    option_sel = input("Enter: ")
+    option_sel = input("\nEnter: ")
 
     if option_sel == "1":
-        print("Test 1")
+        current_shop_stock()
     elif option_sel == "2":
         print("Test 2")
     elif option_sel == "3":
         print("Test 3")
     else:
         print("The shop does not provide this service")
+
+def current_shop_stock():
+    """
+    Displays the current stock inventory of the shop
+    """
+    current_stock = SHEET.worksheet('current_stock').get_all_values()
+    for row in current_stock:
+        print(row)
 
 
 def main():
