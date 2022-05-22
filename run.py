@@ -21,7 +21,7 @@ def open_shop():
     """
     print("\t---CORNER STORE---")
     print("\nPlease choose number 1-3 to proceed")
-    print("1) Current stock inventory")
+    print("1) Shop consumables and prices")
     print("2) Create new Customer Order")
     print("3) Execute existing costomer order")
     option_sel = input("\nEnter: ")
@@ -37,12 +37,15 @@ def open_shop():
 
 def current_shop_stock():
     """
-    Displays the current stock inventory of the shop
+    Displays list of items on sale and individual price
     """
-    current_stock = SHEET.worksheet('current_stock').get_all_values()
-    for row in current_stock:
-        print(row)
-
+    print("\n------------------")
+    print("Items are available at the following prices")
+    print("------------------")
+    shop_stock = SHEET.worksheet('items_prices').get_all_values()
+    for item in shop_stock:
+        print(f'{item[0]} : €{item[1]}')
+    print("------------------")
 
 def main():
     open_shop()
