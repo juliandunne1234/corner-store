@@ -30,10 +30,12 @@ def new_customer_order():
     the customer_order spreadsheet.
     Customer can continue more items if required.
     """
+    worksheet_to_update = SHEET.worksheet('customer_order')
+    worksheet_to_update.clear()
+
     customer_name = input("Hello, please enter your name: ")
     customer_balance = float(input("Please enter your cash balance: €"))
 
-    worksheet_to_update = SHEET.worksheet('customer_order')
     worksheet_to_update.append_row([customer_name, customer_balance])
 
     while True:
@@ -66,7 +68,7 @@ def open_shop():
         print("2) Create new Customer Order")
         print("3) Execute existing costomer order")
         option_sel = input("\nEnter: ")
-        
+
         if option_sel == "1":
             current_shop_stock()
         elif option_sel == "2":
