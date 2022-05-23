@@ -27,13 +27,26 @@ def current_shop_stock():
 def new_customer_order():
     customer_name = input("Hello, please enter your name: ")
     customer_balance = float(input("Please enter your cash balance: €"))
-    # customer_order = []
-    # customer_order.append([customer_name, customer_balance])
 
     worksheet_to_update = SHEET.worksheet('customer_order')
     worksheet_to_update.append_row([customer_name, customer_balance])
-    print("Worksheet updated")
 
+    while True:
+        item_order = input("Please select item from shop stock: ")
+        item_quantity = int(input("Please enter the amount you want: "))
+        worksheet_to_update.append_row([item_order, item_quantity])
+        print("Worksheet updated")
+
+        shopping_complete = input("Is there anything else? Y/N\n")
+        if shopping_complete == "Y":
+            continue
+        elif shopping_complete == "N":
+            break
+        else:
+            last_chance = input("Please select Y or N\nIs there anything else we can get you?\n")
+            if last_chance != "Y":
+                print("We will take that as a no.")
+                break
 
 def open_shop():
     """
