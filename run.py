@@ -25,6 +25,11 @@ def current_shop_stock():
     print("------------------")
 
 def new_customer_order():
+    """
+    Write the customer name, cash balalance and customer order to 
+    the customer_order spreadsheet.
+    Customer can continue more items if required.
+    """
     customer_name = input("Hello, please enter your name: ")
     customer_balance = float(input("Please enter your cash balance: €"))
 
@@ -35,7 +40,6 @@ def new_customer_order():
         item_order = input("Please select item from shop stock: ")
         item_quantity = int(input("Please enter the amount you want: "))
         worksheet_to_update.append_row([item_order, item_quantity])
-        print("Worksheet updated")
 
         shopping_complete = input("Is there anything else? Y/N\n")
         if shopping_complete == "Y":
@@ -55,21 +59,23 @@ def open_shop():
     2) Input customer order
     3) Complete existing customer order
     """
-    print("\t---CORNER STORE---")
-    print("\nPlease choose number 1-3 to proceed")
-    print("1) Shop consumables and prices")
-    print("2) Create new Customer Order")
-    print("3) Execute existing costomer order")
-    option_sel = input("\nEnter: ")
-
-    if option_sel == "1":
-        current_shop_stock()
-    elif option_sel == "2":
-        new_customer_order()
-    elif option_sel == "3":
-        print("Test 3")
-    else:
-        print("The shop does not provide this service")
+    while True:
+        print("\t---CORNER STORE---")
+        print("\nPlease choose number 1-3 to proceed")
+        print("1) Shop consumables and prices")
+        print("2) Create new Customer Order")
+        print("3) Execute existing costomer order")
+        option_sel = input("\nEnter: ")
+        
+        if option_sel == "1":
+            current_shop_stock()
+        elif option_sel == "2":
+            new_customer_order()
+        elif option_sel == "3":
+            print("Test 3")
+        else:
+            print("The shop does not provide this service")
+            break
 
 def main():
     open_shop()
