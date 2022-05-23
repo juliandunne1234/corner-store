@@ -29,6 +29,7 @@ def new_customer_order():
     Write the customer name, cash balalance and customer order to 
     the customer_order spreadsheet.
     Customer can continue more items if required.
+    Each new customer order will clear the previous customers order.
     """
     worksheet_to_update = SHEET.worksheet('customer_order')
     worksheet_to_update.clear()
@@ -54,6 +55,27 @@ def new_customer_order():
                 print("We will take that as a no.")
                 break
 
+def process_customer_order(worksheet):
+    """
+    Process a new or existing customer order.
+    Only process valid orders where the item
+    is in stock in the shop.
+    Orders can only be executed based on the
+    quantities in stock.
+    """
+    process_order = SHEET.worksheet(worksheet).get_all_values()
+    processing_order = process_order[1:]
+
+    current_stock = SHEET.worksheet('current_stock').get_all_values()
+    
+    for cust_item in processing_order:
+
+        for stock_item in current_stock:
+
+            if cust_item[0] == stock_item[0]:
+                print(cust_item[0])
+
+
 def open_shop():
     """
     Provide 3 options to the user:
@@ -73,6 +95,7 @@ def open_shop():
             current_shop_stock()
         elif option_sel == "2":
             new_customer_order()
+            process_customer_order('customer_order')
         elif option_sel == "3":
             print("Test 3")
         else:
