@@ -42,9 +42,9 @@ def current_shop_stock():
     print("\n------------------")
     print("Items are available at the following prices")
     print("------------------")
-    shop_stock = SHEET.worksheet('items_prices').get_all_values()
+    shop_stock = SHEET.worksheet('current_stock').get_all_values()
     for item in shop_stock:
-        print(f'{item[0]} : €{item[1]}')
+        print(f'{item[0]} : €{item[2]}')
     print("------------------")
 
 def main():
