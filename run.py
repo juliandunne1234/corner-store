@@ -12,6 +12,29 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner_store')
 
+def current_shop_stock():
+    """
+    Displays list of items on sale and individual price
+    """
+    print("\n------------------")
+    print("Items are available at the following prices")
+    print("------------------")
+    shop_stock = SHEET.worksheet('current_stock').get_all_values()
+    for item in shop_stock:
+        print(f'{item[0]} : €{item[2]}')
+    print("------------------")
+
+def new_customer_order():
+    customer_name = input("Hello, please enter your name: ")
+    customer_balance = float(input("Please enter your cash balance: €"))
+    # customer_order = []
+    # customer_order.append([customer_name, customer_balance])
+
+    worksheet_to_update = SHEET.worksheet('customer_order')
+    worksheet_to_update.append_row([customer_name, customer_balance])
+    print("Worksheet updated")
+
+
 def open_shop():
     """
     Provide 3 options to the user:
@@ -29,23 +52,11 @@ def open_shop():
     if option_sel == "1":
         current_shop_stock()
     elif option_sel == "2":
-        print("Test 2")
+        new_customer_order()
     elif option_sel == "3":
         print("Test 3")
     else:
         print("The shop does not provide this service")
-
-def current_shop_stock():
-    """
-    Displays list of items on sale and individual price
-    """
-    print("\n------------------")
-    print("Items are available at the following prices")
-    print("------------------")
-    shop_stock = SHEET.worksheet('current_stock').get_all_values()
-    for item in shop_stock:
-        print(f'{item[0]} : €{item[2]}')
-    print("------------------")
 
 def main():
     open_shop()
