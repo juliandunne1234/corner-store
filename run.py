@@ -1,5 +1,8 @@
 import gspread
 from google.oauth2.service_account import Credentials
+from dataclasses import dataclass, field
+from typing import List
+
 
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -12,26 +15,45 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner_store')
 
-def open_and_stock_shop():
-    create_shop_stock = SHEET.worksheet('restock').get_all_values()
-    starting_stock = SHEET.worksheet('current_stock')
-    starting_stock.clear()
-    for row in create_shop_stock:
-        starting_stock.append_row(row)
-    print("------------------")
+
+@dataclass
+class ProductStock:
+    item: str
+    quantity: int
+    price: float = 0.0
+
+@dataclass
+class Shop:
+    balance: float = 0.0
+    stock: List[ProductStock] = field(default_factory=list)
 
 
-def current_shop_stock():
+def read_shop():
+    """
+    Stock the shop using the current_stock spreadsheet
+    """
+    shop = Shop()
+    create_shop_stock = SHEET.worksheet('current_stock').get_all_values()
+    shop.balance = float(create_shop_stock[0][0])
+    for row in create_shop_stock[1:]:
+        product = ProductStock(row[0], int(row[1]), float(row[2]))
+        shop.stock.append(product)
+
+    return shop
+
+
+def current_shop_stock(s):
     """
     Displays list of items on sale and individual price
     """
     print("\n------------------")
     print("Items are available at the following prices")
     print("------------------")
-    shop_stock = SHEET.worksheet('current_stock').get_all_values()
-    for item in shop_stock:
-        print(f'{item[0]} : €{item[2]}')
+
+    for row in s.stock:
+        print(f'{row.item} : €{row.price}')
     print("------------------")
+
 
 def new_customer_order():
     """
@@ -64,6 +86,7 @@ def new_customer_order():
                 print("We will take that as a no.")
                 break
 
+
 def process_customer_order(worksheet):
     """
     Process a new or existing customer order.
@@ -92,7 +115,7 @@ def open_shop():
     2) Input customer order
     3) Complete existing customer order
     """
-    stock_shop = open_and_stock_shop()
+    stock_shop = read_shop()
 
     while True:
         print("\t---CORNER STORE---")
@@ -103,7 +126,7 @@ def open_shop():
         option_sel = input("\nEnter: ")
 
         if option_sel == "1":
-            current_shop_stock()
+            current_shop_stock(stock_shop)
         elif option_sel == "2":
             new_customer_order()
             process_customer_order('customer_order')
