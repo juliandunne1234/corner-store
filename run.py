@@ -12,6 +12,15 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner_store')
 
+def open_and_stock_shop():
+    create_shop_stock = SHEET.worksheet('restock').get_all_values()
+    starting_stock = SHEET.worksheet('current_stock')
+    starting_stock.clear()
+    for row in create_shop_stock:
+        starting_stock.append_row(row)
+    print("------------------")
+
+
 def current_shop_stock():
     """
     Displays list of items on sale and individual price
@@ -69,11 +78,11 @@ def process_customer_order(worksheet):
     current_stock = SHEET.worksheet('current_stock').get_all_values()
     
     for cust_item in processing_order:
-
         for stock_item in current_stock:
-
             if cust_item[0] == stock_item[0]:
-                print(cust_item[0])
+                print(cust_item[1])
+                print(stock_item[1])
+                print(stock_item[2])
 
 
 def open_shop():
@@ -83,6 +92,8 @@ def open_shop():
     2) Input customer order
     3) Complete existing customer order
     """
+    stock_shop = open_and_stock_shop()
+
     while True:
         print("\t---CORNER STORE---")
         print("\nPlease choose number 1-3 to proceed")
