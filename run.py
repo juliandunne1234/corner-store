@@ -75,7 +75,7 @@ def current_shop_stock(s):
     print("------------------")
 
     for row in s.stock:
-        print(f'{row.item} : €{row.price}')
+        print(f'{row.item} : €{row.quantity}')
     print("------------------")
 
 
@@ -110,6 +110,17 @@ def new_customer_order():
                 print("We will take that as a no.")
                 break
 
+def customer_order(c):
+    """
+    Displays list of items and the quantity the customer has ordered
+    """
+    print("\n------------------")
+    print("Items and the quantity requried by the customer")
+    print("------------------")
+
+    for row in c.order:
+        print(f'{row.item} : €{row.quantity}')
+    print("------------------")
 
 # def process_customer_order(worksheet):
 #     """
@@ -153,7 +164,8 @@ def open_shop():
             current_shop_stock(stock_shop)
         elif option_sel == "2":
             new_customer_order()
-            c = read_customer('customer_order')
+            cust_order = read_customer('customer_order')
+            customer_order(cust_order)
             # process_customer_order('customer_order')
         elif option_sel == "3":
             print("Test 3")
