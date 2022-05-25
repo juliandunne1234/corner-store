@@ -27,6 +27,17 @@ class Shop:
     balance: float = 0.0
     stock: List[ProductStock] = field(default_factory=list)
 
+@dataclass
+class ProductOrder:
+    item: str
+    quantity: int
+
+@dataclass
+class Customer:
+    name: str
+    cash: float = 0.0
+    order: List[ProductOrder] = field(default_factory=list)
+
 
 def read_shop():
     """
@@ -41,6 +52,19 @@ def read_shop():
 
     return shop
 
+def read_customer(filepath):
+    """
+    Read the customer order from the customer_order spreadsheet
+    """
+    customer_order = SHEET.worksheet(filepath).get_all_values()
+    customer_info = customer_order[0]
+    customer = Customer(customer_info[0], float(customer_info[1]))
+
+    for row in customer_order[1:]:
+        customer_product = ProductOrder(row[0], int(row[1]))
+        customer.order.append(customer_product)
+
+    return customer
 
 def current_shop_stock(s):
     """
@@ -87,25 +111,25 @@ def new_customer_order():
                 break
 
 
-def process_customer_order(worksheet):
-    """
-    Process a new or existing customer order.
-    Only process valid orders where the item
-    is in stock in the shop.
-    Orders can only be executed based on the
-    quantities in stock.
-    """
-    process_order = SHEET.worksheet(worksheet).get_all_values()
-    processing_order = process_order[1:]
+# def process_customer_order(worksheet):
+#     """
+#     Process a new or existing customer order.
+#     Only process valid orders where the item
+#     is in stock in the shop.
+#     Orders can only be executed based on the
+#     quantities in stock.
+#     """
+#     process_order = SHEET.worksheet(worksheet).get_all_values()
+#     processing_order = process_order[1:]
 
-    current_stock = SHEET.worksheet('current_stock').get_all_values()
+#     current_stock = SHEET.worksheet('current_stock').get_all_values()
     
-    for cust_item in processing_order:
-        for stock_item in current_stock:
-            if cust_item[0] == stock_item[0]:
-                print(cust_item[1])
-                print(stock_item[1])
-                print(stock_item[2])
+#     for cust_item in processing_order:
+#         for stock_item in current_stock:
+#             if cust_item[0] == stock_item[0]:
+#                 print(cust_item[1])
+#                 print(stock_item[1])
+#                 print(stock_item[2])
 
 
 def open_shop():
@@ -129,7 +153,8 @@ def open_shop():
             current_shop_stock(stock_shop)
         elif option_sel == "2":
             new_customer_order()
-            process_customer_order('customer_order')
+            c = read_customer('customer_order')
+            # process_customer_order('customer_order')
         elif option_sel == "3":
             print("Test 3")
         else:
