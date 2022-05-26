@@ -142,11 +142,35 @@ def process_customer_order(c, s):
                     product_cost += cust_item.quantity * stock_item.price
                     if c.cash >= product_cost:
                         c.cash -= product_cost
+                        print(f"{cust_item.item} * {cust_item.quantity} = {product_cost}")
                         print(c.cash)
                     elif (product_cost > c.cash) & (c.cash >= stock_item.price):
                         cust_item.quantity = math.floor(c.cash / stock_item.price)
                         c.cash -= cust_item.quantity * stock_item.price
+                        print(f"{cust_item.item} * {cust_item.quantity} = {product_cost}")
                         print(c.cash)
+                    elif c.cash < stock_item.price:
+                        print(F"You cannot afford to buy {cust_item.item}")
+
+                elif cust_item.quantity > stock_item.quantity:
+                    cust_item.quantity = stock_item.quantity
+                    product_cost += cust_item.quantity * stock_item.price
+                    if c.cash >= product_cost:
+                        c.cash -= product_cost
+                        print(f"{cust_item.item} * {cust_item.quantity} = {product_cost}")
+                        print(c.cash)
+                    elif (product_cost > c.cash) & (c.cash >= stock_item.price):
+                        cust_item.quantity = math.floor(c.cash / stock_item.price)
+                        c.cash -= cust_item.quantity * stock_item.price
+                        print(f"{cust_item.item} * {cust_item.quantity} = {product_cost}")
+                        print(c.cash)
+                    elif c.cash < stock_item.price:
+                        print(F"You cannot afford to buy {cust_item.item}")
+
+    # else:
+    #     print("We don't have anything you are looking for")
+    #     print("Please look at the current available stock or shop online\n")
+
     # print(total_cost)
 
 
