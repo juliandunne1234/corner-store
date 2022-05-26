@@ -69,14 +69,14 @@ def read_customer(filepath):
 
 def current_shop_stock(s):
     """
-    Displays list of items on sale and individual price
+    Displays list of items on sale and the quantity in stock
     """
     print("\n------------------")
-    print("Items are available at the following prices")
+    print("Items are available at the quantity in stock")
     print("------------------")
 
     for row in s.stock:
-        print(f'{row.item} : €{row.quantity}')
+        print(f'{row.item} : {row.quantity}')
     print("------------------")
 
 
@@ -143,10 +143,12 @@ def process_customer_order(c, s):
                     product_cost += cust_item.quantity * stock_item.price
                     if c.cash >= product_cost:
                         c.cash -= product_cost
+                        stock_item.quantity -= cust_item.quantity
                         print(f"{cust_item.item} * {cust_item.quantity} = €{product_cost}")
                     elif (product_cost > c.cash) & (c.cash >= stock_item.price):
                         cust_item.quantity = math.floor(c.cash / stock_item.price)
                         c.cash -= cust_item.quantity * stock_item.price
+                        stock_item.quantity -= cust_item.quantity
                         print(f"{cust_item.item} * {cust_item.quantity} = €{product_cost}")
                     elif c.cash < stock_item.price:
                         print(F"You cannot afford to buy {cust_item.item}")
@@ -156,10 +158,12 @@ def process_customer_order(c, s):
                     product_cost += cust_item.quantity * stock_item.price
                     if c.cash >= product_cost:
                         c.cash -= product_cost
+                        stock_item.quantity -= cust_item.quantity
                         print(f"{cust_item.item} * {cust_item.quantity} = €{product_cost}")
                     elif (product_cost > c.cash) & (c.cash >= stock_item.price):
                         cust_item.quantity = math.floor(c.cash / stock_item.price)
                         c.cash -= cust_item.quantity * stock_item.price
+                        stock_item.quantity -= cust_item.quantity
                         print(f"{cust_item.item} * {cust_item.quantity} = €{product_cost}")
                     elif c.cash < stock_item.price:
                         print(F"You cannot afford to buy {cust_item.item}")
