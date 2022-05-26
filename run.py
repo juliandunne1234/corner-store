@@ -2,6 +2,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 from dataclasses import dataclass, field
 from typing import List
+import math
 
 
 SCOPE = [
@@ -90,9 +91,9 @@ def new_customer_order():
     worksheet_to_update.clear()
 
     customer_name = input("Hello, please enter your name: ")
-    customer_balance = float(input("Please enter your cash balance: €"))
+    customer_balance = input("Please enter your cash balance: €")
 
-    worksheet_to_update.append_row([customer_name, customer_balance])
+    worksheet_to_update.append_row([customer_name, float(customer_balance)])
 
     while True:
         item_order = input("Please select item from shop stock: ")
@@ -119,28 +120,34 @@ def customer_order(c):
     print("------------------")
 
     for row in c.order:
-        print(f'{row.item} : €{row.quantity}')
+        print(f'{row.item} : {row.quantity}')
     print("------------------")
 
-# def process_customer_order(worksheet):
-#     """
-#     Process a new or existing customer order.
-#     Only process valid orders where the item
-#     is in stock in the shop.
-#     Orders can only be executed based on the
-#     quantities in stock.
-#     """
-#     process_order = SHEET.worksheet(worksheet).get_all_values()
-#     processing_order = process_order[1:]
+def process_customer_order(c, s):
+    """
+    Process a new or existing customer order.
+    Only process valid orders where the item
+    is in stock in the shop.
+    Orders can only be executed based on the
+    quantities in stock.
+    """
+    total_cost = float(0.00)
+    product_cost = float(0.00)
 
-#     current_stock = SHEET.worksheet('current_stock').get_all_values()
-    
-#     for cust_item in processing_order:
-#         for stock_item in current_stock:
-#             if cust_item[0] == stock_item[0]:
-#                 print(cust_item[1])
-#                 print(stock_item[1])
-#                 print(stock_item[2])
+    for cust_item in c.order:
+        for stock_item in s.stock:
+
+            if cust_item.item == stock_item.item:
+                if cust_item.quantity <= stock_item.quantity:
+                    product_cost += cust_item.quantity * stock_item.price
+                    if c.cash >= product_cost:
+                        c.cash -= product_cost
+                        print(c.cash)
+                    elif (product_cost > c.cash) & (c.cash >= stock_item.price):
+                        cust_item.quantity = math.floor(c.cash / stock_item.price)
+                        c.cash -= cust_item.quantity * stock_item.price
+                        print(c.cash)
+    # print(total_cost)
 
 
 def open_shop():
@@ -166,7 +173,7 @@ def open_shop():
             new_customer_order()
             cust_order = read_customer('customer_order')
             customer_order(cust_order)
-            # process_customer_order('customer_order')
+            process_customer_order(cust_order, stock_shop)
         elif option_sel == "3":
             print("Test 3")
         else:
