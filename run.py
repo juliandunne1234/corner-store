@@ -131,13 +131,13 @@ def process_customer_order(c, s):
     """
     starting_cash = c.cash
     item_quantity_cost = float(0.00)
-    product_cost = float(0.00)
+    
     valid_order = False
 
     print("The customer can purchase the following:")
     for cust_item in c.order:
         for stock_item in s.stock:
-
+            product_cost = 0
             if cust_item.item == stock_item.item:
                 valid_order = True
                 if cust_item.quantity <= stock_item.quantity:
@@ -208,7 +208,9 @@ def open_shop():
             customer_order(cust_order)
             process_customer_order(cust_order, stock_shop)
         elif option_sel == "3":
-            print("Test 3")
+            online_order = read_customer('online_order')
+            customer_order(online_order)
+            process_customer_order(online_order, stock_shop)
         else:
             print("The shop does not provide this service")
             break
