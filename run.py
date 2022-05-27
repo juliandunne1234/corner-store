@@ -127,10 +127,7 @@ def customer_order(c):
 def process_customer_order(c, s):
     """
     Process a new or existing customer order.
-    Only process valid orders where the item
-    is in stock in the shop.
-    Orders can only be executed based on the
-    quantities in stock.
+    If an order cannot be processed, tell the customer
     """
     starting_cash = c.cash
     item_quantity_cost = float(0.00)
@@ -145,39 +142,15 @@ def process_customer_order(c, s):
                 valid_order = True
                 if cust_item.quantity <= stock_item.quantity:
                     product_cost += cust_item.quantity * stock_item.price
-                    if c.cash >= product_cost:
-                        c.cash -= product_cost
-                        stock_item.quantity -= cust_item.quantity
-                        item_quantity_cost = stock_item.price * cust_item.quantity
-                        print(f"{cust_item.item} * {cust_item.quantity} = €{round((item_quantity_cost), 2)}")
-                    elif (product_cost > c.cash) & (c.cash >= stock_item.price):
-                        cust_item.quantity = math.floor(c.cash / stock_item.price)
-                        c.cash -= cust_item.quantity * stock_item.price
-                        stock_item.quantity -= cust_item.quantity
-                        item_quantity_cost = stock_item.price * cust_item.quantity
-                        print(f"{cust_item.item} * {cust_item.quantity} = €{round((item_quantity_cost), 2)}")
-                    elif c.cash < stock_item.price:
-                        print(F"You cannot afford to buy {cust_item.item}")
-
+                    execute_order(c, product_cost, stock_item, cust_item)
+                    
                 elif cust_item.quantity > stock_item.quantity:
                     cust_item.quantity = stock_item.quantity
                     product_cost += cust_item.quantity * stock_item.price
-                    if c.cash >= product_cost:
-                        c.cash -= product_cost
-                        stock_item.quantity -= cust_item.quantity
-                        item_quantity_cost = stock_item.price * cust_item.quantity
-                        print(f"{cust_item.item} * {cust_item.quantity} = €{round((item_quantity_cost), 2)}")
-                    elif (product_cost > c.cash) & (c.cash >= stock_item.price):
-                        cust_item.quantity = math.floor(c.cash / stock_item.price)
-                        c.cash -= cust_item.quantity * stock_item.price
-                        stock_item.quantity -= cust_item.quantity
-                        item_quantity_cost = stock_item.price * cust_item.quantity
-                        print(f"{cust_item.item} * {cust_item.quantity} = €{round((item_quantity_cost), 2)}")
-                    elif c.cash < stock_item.price:
-                        print(F"You cannot afford to buy {cust_item.item}")
+                    execute_order(c, product_cost, stock_item, cust_item)
 
     if not valid_order:
-        print("We don't have anything you are looking for")
+        print("\nSorry we don't have anything you are looking for")
         print("Please look at the current available stock or shop online\n")
 
     s.balance += (starting_cash - c.cash)
@@ -186,6 +159,28 @@ def process_customer_order(c, s):
     print(f"{c.name}, has €{round((c.cash), 2)} remaining.")
     print(f"The shop balance is €{s.balance}.")
     print("------------------\n") 
+
+def execute_order(c, product_cost, stock_item, cust_item):
+    """
+    Execute the customer order.
+    Only process valid orders where the item
+    is in stock in the shop.
+    Orders can only be executed based on the
+    quantities in stock.
+    """
+    if c.cash >= product_cost:
+        c.cash -= product_cost
+        stock_item.quantity -= cust_item.quantity
+        item_quantity_cost = stock_item.price * cust_item.quantity
+        print(f"{cust_item.item} * {cust_item.quantity} = €{round((item_quantity_cost), 2)}")
+    elif (product_cost > c.cash) & (c.cash >= stock_item.price):
+        cust_item.quantity = math.floor(c.cash / stock_item.price)
+        c.cash -= cust_item.quantity * stock_item.price
+        stock_item.quantity -= cust_item.quantity
+        item_quantity_cost = stock_item.price * cust_item.quantity
+        print(f"{cust_item.item} * {cust_item.quantity} = €{round((item_quantity_cost), 2)}")
+    elif c.cash < stock_item.price:
+        print(F"You cannot afford to buy {cust_item.item}")
 
 
 def open_shop():
