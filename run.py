@@ -195,7 +195,7 @@ def open_shop():
 
     while True:
         print("\n\t---CORNER STORE---")
-        print("\nPlease choose option 1-3 to proceed")
+        print("\nPlease choose option 1-4 to proceed")
         print("1) Shop consumables and prices")
         print("2) Create new Customer Order")
         print("3) Execute existing online customer order")
