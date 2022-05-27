@@ -73,7 +73,7 @@ def current_shop_stock(s):
     Displays list of items on sale and the quantity in stock
     """
     print("\n------------------")
-    print(f"The current shop balance is €{s.balance}")
+    print(f"The current shop balance is €{round(s.balance, 2)}")
     print("Items available and quantity currently in stock")
     print("------------------")
 
