@@ -3,6 +3,7 @@ from google.oauth2.service_account import Credentials
 from dataclasses import dataclass, field
 from typing import List
 import math
+import sys
 
 
 SCOPE = [
@@ -91,26 +92,32 @@ def new_customer_order():
     worksheet_to_update = SHEET.worksheet('customer_order')
     worksheet_to_update.clear()
 
-    customer_name = input("Hello, please enter your name: ")
-    customer_balance = input("Please enter your cash balance: €")
+    try:
+        customer_name = input("Hello, please enter your name: ")
+        customer_balance = input("Please enter your cash balance: €")
+    
+        worksheet_to_update.append_row([customer_name, float(customer_balance)])
 
-    worksheet_to_update.append_row([customer_name, float(customer_balance)])
+        while True:
+            item_order = input("Please select item from shop stock: ")
+            item_quantity = int(input("Please enter the amount you want: "))
+            worksheet_to_update.append_row([item_order, item_quantity])
 
-    while True:
-        item_order = input("Please select item from shop stock: ")
-        item_quantity = int(input("Please enter the amount you want: "))
-        worksheet_to_update.append_row([item_order, item_quantity])
-
-        shopping_complete = input("Is there anything else 'Y'/'N'?\n")
-        if shopping_complete == "Y":
-            continue
-        elif shopping_complete == "N":
-            break
-        else:
-            last_chance = input("Please select 'Y' or 'N'\nIs there anything else we can get you?\n")
-            if last_chance != "Y":
-                print("We will take that as a no. Thanks you and goodbye.")
+            shopping_complete = input("Is there anything else 'Y'/'N'?\n")
+            if shopping_complete == "Y":
+                continue
+            elif shopping_complete == "N":
                 break
+            else:
+                last_chance = input("Please select 'Y' or 'N'\nIs there anything else we can get you?\n")
+                if last_chance != "Y":
+                    print("We will take that as a no. Thanks you and goodbye.")
+                    break
+    
+    except ValueError:
+        print("You have entered an invalid cash amount")
+        open_shop()
+
 
 def customer_order(c):
     """
@@ -211,6 +218,15 @@ def open_shop():
             online_order = read_customer('online_order')
             customer_order(online_order)
             process_customer_order(online_order, stock_shop)
+        elif option_sel == "4":
+            restock_shop = read_shop()
+            for restock_quant, stock_quant in zip(restock_shop.stock, stock_shop.stock):
+                stock_required = restock_quant.quantity - stock_quant.quantity
+                shop_cost = (stock_required * (stock_quant.price * 0.7))
+                stock_quant.quantity += stock_required
+                stock_shop.balance -= shop_cost
+            current_shop_stock(stock_shop)
+
         else:
             print("The shop does not provide this service")
             break
