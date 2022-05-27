@@ -3,8 +3,6 @@ from google.oauth2.service_account import Credentials
 from dataclasses import dataclass, field
 from typing import List
 import math
-import sys
-
 
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -16,7 +14,6 @@ CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner_store')
-
 
 @dataclass
 class ProductStock:
@@ -40,10 +37,9 @@ class Customer:
     cash: float = 0.0
     order: List[ProductOrder] = field(default_factory=list)
 
-
 def read_shop():
     """
-    Stock the shop using the current_stock spreadsheet
+    Stock the shop dataclass using the current_stock spreadsheet.
     """
     shop = Shop()
     create_shop_stock = SHEET.worksheet('current_stock').get_all_values()
@@ -70,7 +66,8 @@ def read_customer(filepath):
 
 def current_shop_stock(s):
     """
-    Displays list of items on sale and the quantity in stock
+    Displays the shop balance and a list of items
+    for sale and the quantity currently in stock
     """
     print("\n------------------")
     print(f"The current shop balance is €{round(s.balance, 2)}")
@@ -81,26 +78,25 @@ def current_shop_stock(s):
         print(f'{row.item} : {row.quantity}')
     print("------------------")
 
-
 def new_customer_order():
     """
-    Write the customer name, cash balalance and customer order to 
+    Write the customer name, cash balance and customer order to 
     the customer_order spreadsheet.
-    Customer can continue more items if required.
-    Each new customer order will clear the previous customers order.
+    Customer can continue adding as many items as required.
+    Each new customer order will clear the previous one from the spreadsheet.
     """
     worksheet_to_update = SHEET.worksheet('customer_order')
     worksheet_to_update.clear()
 
     try:
-        customer_name = input("Hello, please enter your name: ")
-        customer_balance = input("Please enter your cash balance: €")
+        customer_name = input("Hello, please enter your name:\n")
+        customer_balance = input("Please enter your cash balance in euros:\n")
     
         worksheet_to_update.append_row([customer_name, float(customer_balance)])
 
         while True:
-            item_order = input("Please select item from shop stock: ")
-            item_quantity = int(input("Please enter the amount you want: "))
+            item_order = input("Please select item from shop stock:\n")
+            item_quantity = int(input("Please enter the amount you want:\n"))
             worksheet_to_update.append_row([item_order, item_quantity])
 
             shopping_complete = input("Is there anything else 'Y'/'N'?\n")
@@ -118,7 +114,6 @@ def new_customer_order():
         print("You have entered an invalid cash amount")
         open_shop()
 
-
 def customer_order(c):
     """
     Displays list of items and the quantity the customer has ordered
@@ -134,7 +129,6 @@ def customer_order(c):
 def process_customer_order(c, s):
     """
     Process a new or existing customer order.
-    If an order cannot be processed, tell the customer
     """
     starting_cash = c.cash
     item_quantity_cost = float(0.00)
@@ -170,10 +164,9 @@ def process_customer_order(c, s):
 def execute_order(c, product_cost, stock_item, cust_item):
     """
     Execute the customer order.
-    Only process valid orders where the item
-    is in stock in the shop.
-    Orders can only be executed based on the
-    quantities in stock.
+    If an order cannot be executed, tell the customer.
+    Reasons for not processing order include insufficient cash,
+    insufficient stock or items not included in shop stock.
     """
     if c.cash >= product_cost:
         c.cash -= product_cost
@@ -189,23 +182,25 @@ def execute_order(c, product_cost, stock_item, cust_item):
     elif c.cash < stock_item.price:
         print(F"You cannot afford to buy: {cust_item.item}")
 
-
 def open_shop():
     """
     Provide 3 options to the user:
     1) See stock inventory
     2) Input customer order
-    3) Complete existing customer order
+    3) Complete existing online customer order
+    4) Restock the shop at a cost of 70% of the 
+        replaced items sale price
     """
     stock_shop = read_shop()
 
     while True:
         print("\n\t---CORNER STORE---")
-        print("\nPlease choose number 1-3 to proceed")
+        print("\nPlease choose option 1-3 to proceed")
         print("1) Shop consumables and prices")
         print("2) Create new Customer Order")
-        print("3) Execute existing costomer order")
-        option_sel = input("\nEnter: ")
+        print("3) Execute existing online customer order")
+        print("4) Restock the shop shelves at wholesale dicsount price")
+        option_sel = input("\n")
 
         if option_sel == "1":
             current_shop_stock(stock_shop)
