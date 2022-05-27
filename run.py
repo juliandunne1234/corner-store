@@ -180,7 +180,7 @@ def execute_order(c, product_cost, stock_item, cust_item):
         item_quantity_cost = stock_item.price * cust_item.quantity
         print(f"{cust_item.item} * {cust_item.quantity} = €{round((item_quantity_cost), 2)}")
     elif c.cash < stock_item.price:
-        print(F"You cannot afford to buy {cust_item.item}")
+        print(F"You cannot afford to buy: {cust_item.item}")
 
 
 def open_shop():
