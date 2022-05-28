@@ -1,8 +1,9 @@
-import gspread
-from google.oauth2.service_account import Credentials
+"Import the required libraries"
 from dataclasses import dataclass, field
 from typing import List
 import math
+import gspread
+from google.oauth2.service_account import Credentials
 
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -15,27 +16,32 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner_store')
 
+
 @dataclass
 class ProductStock:
     item: str
     quantity: int
     price: float = 0.0
 
+
 @dataclass
 class Shop:
     balance: float = 0.0
     stock: List[ProductStock] = field(default_factory=list)
+
 
 @dataclass
 class ProductOrder:
     item: str
     quantity: int
 
+
 @dataclass
 class Customer:
     name: str
     cash: float = 0.0
     order: List[ProductOrder] = field(default_factory=list)
+
 
 def read_shop():
     """
@@ -49,6 +55,7 @@ def read_shop():
         shop.stock.append(product)
 
     return shop
+
 
 def read_customer(filepath):
     """
@@ -64,6 +71,7 @@ def read_customer(filepath):
 
     return customer
 
+
 def current_shop_stock(s):
     """
     Displays the shop balance and a list of items
@@ -78,6 +86,7 @@ def current_shop_stock(s):
         print(f'{row.item} : {row.quantity}')
     print("------------------")
 
+
 def new_customer_order():
     """
     Write the customer name, cash balance and customer order to 
@@ -91,8 +100,8 @@ def new_customer_order():
     try:
         customer_name = input("Hello, please enter your name:\n")
         customer_balance = input("Please enter your cash balance in euros:\n")
-    
-        worksheet_to_update.append_row([customer_name, float(customer_balance)])
+        customer_details = [customer_name, float(customer_balance)]
+        worksheet_to_update.append_row(customer_details)
 
         while True:
             item_order = input("Please select item from shop stock:\n")
@@ -105,14 +114,16 @@ def new_customer_order():
             elif shopping_complete == "N":
                 break
             else:
-                last_chance = input("Please select 'Y' or 'N'\nIs there anything else we can get you?\n")
+                print("Please select 'Y' or 'N'")
+                print("Is there anything else we can get you?")
+                last_chance = input()
                 if last_chance != "Y":
-                    print("We will take that as a no. Thanks you and goodbye.")
+                    print("Okay so that is not a Yes.")
                     break
-    
     except ValueError:
         print("You have entered an invalid cash amount")
         open_shop()
+
 
 def customer_order(c):
     """
@@ -126,13 +137,12 @@ def customer_order(c):
         print(f'{row.item} : {row.quantity}')
     print("------------------\n")
 
+
 def process_customer_order(c, s):
     """
     Process a new or existing customer order.
     """
     starting_cash = c.cash
-    item_quantity_cost = float(0.00)
-    
     valid_order = False
 
     print("The customer can purchase the following:")
@@ -144,7 +154,6 @@ def process_customer_order(c, s):
                 if cust_item.quantity <= stock_item.quantity:
                     product_cost += cust_item.quantity * stock_item.price
                     execute_order(c, product_cost, stock_item, cust_item)
-                    
                 elif cust_item.quantity > stock_item.quantity:
                     cust_item.quantity = stock_item.quantity
                     product_cost += cust_item.quantity * stock_item.price
@@ -161,7 +170,8 @@ def process_customer_order(c, s):
     print(f"The shop balance is €{s.balance}.")
     print("------------------\n") 
 
-def execute_order(c, product_cost, stock_item, cust_item):
+
+def execute_order(c, product_cost, stock_item, c_item):
     """
     Execute the customer order.
     If an order cannot be executed, tell the customer.
@@ -170,17 +180,18 @@ def execute_order(c, product_cost, stock_item, cust_item):
     """
     if c.cash >= product_cost:
         c.cash -= product_cost
-        stock_item.quantity -= cust_item.quantity
-        item_quantity_cost = stock_item.price * cust_item.quantity
-        print(f"{cust_item.item} * {cust_item.quantity} = €{round((item_quantity_cost), 2)}")
+        stock_item.quantity -= c_item.quantity
+        items_cost = stock_item.price * c_item.quantity
+        print(f"{c_item.item} * {c_item.quantity} = €{round((items_cost), 2)}")
     elif (product_cost > c.cash) & (c.cash >= stock_item.price):
-        cust_item.quantity = math.floor(c.cash / stock_item.price)
-        c.cash -= cust_item.quantity * stock_item.price
-        stock_item.quantity -= cust_item.quantity
-        item_quantity_cost = stock_item.price * cust_item.quantity
-        print(f"{cust_item.item} * {cust_item.quantity} = €{round((item_quantity_cost), 2)}")
+        c_item.quantity = math.floor(c.cash / stock_item.price)
+        c.cash -= c_item.quantity * stock_item.price
+        stock_item.quantity -= c_item.quantity
+        items_cost = stock_item.price * c_item.quantity
+        print(f"{c_item.item} * {c_item.quantity} = €{round((items_cost), 2)}")
     elif c.cash < stock_item.price:
-        print(F"You cannot afford to buy: {cust_item.item}")
+        print(F"You cannot afford to buy: {c_item.item}")
+
 
 def open_shop():
     """
@@ -199,7 +210,7 @@ def open_shop():
         print("1) Shop consumables and prices")
         print("2) Create new Customer Order")
         print("3) Execute existing online customer order")
-        print("4) Restock the shop shelves at wholesale dicsount price")
+        print("4) Restock the shop shelves at wholesale discount price")
         option_sel = input("\n")
 
         if option_sel == "1":
@@ -215,10 +226,10 @@ def open_shop():
             process_customer_order(online_order, stock_shop)
         elif option_sel == "4":
             restock_shop = read_shop()
-            for restock_quant, stock_quant in zip(restock_shop.stock, stock_shop.stock):
-                stock_required = restock_quant.quantity - stock_quant.quantity
-                shop_cost = (stock_required * (stock_quant.price * 0.7))
-                stock_quant.quantity += stock_required
+            for rs_q, s_q in zip(restock_shop.stock, stock_shop.stock):
+                stock_required = rs_q.quantity - s_q.quantity
+                shop_cost = (stock_required * (s_q.price * 0.7))
+                s_q.quantity += stock_required
                 stock_shop.balance -= shop_cost
             current_shop_stock(stock_shop)
 
@@ -226,7 +237,9 @@ def open_shop():
             print("The shop does not provide this service")
             break
 
+
 def main():
     open_shop()
+
 
 main()

@@ -12,9 +12,7 @@ Live link - [Corner Store](https://corner-store-app.herokuapp.com/)
 * [Features](#Features)
 * [Testing](#Testing)
 * [Validator Testing](#validator-testing)
-* [Technologies](#Technologies)
 * [Deployment](#Deployment)
-* [Issues List](#Issues-List)
 * [Credits](#Credits)
 ***
 
@@ -53,8 +51,21 @@ Live link - [Corner Store](https://corner-store-app.herokuapp.com/)
     * Shop requires customer to enter a number for euros that they hold.
     * If a customer requests items that the shop does not stock then the customer is reminded that only the items in stock are available.
     * When an item is purchased the stock quantity reduces and the customer cash and also the shop balance are updated to reflect this purchase.
-    * When shop stock is depleted the shopkeeper can restock the shop whereby the shop balance is updated to reflect this albeit at the lower wholesale prices.
-
-* Devtools device toolbar was used to confirm website is responsive and remains asthetically pleasing for the different standard screen sizes.
-* Buttons, input elements, progress bar increment and countdown timer have all been tested to confirm everything functions as required.   
+    * When shop stock is depleted the shopkeeper can restock the shop whereby the shop balance is updated to reflect this albeit at the lower wholesale prices.S
 ***
+
+## Validator Testing
+* Python code - all warnings have been resolved except for two that appear multiple times when passing the run.py file content through the [pep8 online validator](http://pep8online.com/)
+    * E701: multiple statements on one line(colon)
+    * W291: trailing whitespace
+* Neither of the above errors impact running of the corner store python app.
+
+## Deployment
+* The corner store python app has been deployed to [Heroku](https://www.heroku.com/) - a cloud platform service for developers to build and run applications: 
+    * Live link - [Corner Store](https://corner-store-app.herokuapp.com/)
+***
+
+## Credits
+* The Love-Sandwiches walkthrough project with Code Institute was very helpful to use as a starting point for this project.
+* Tutor support was also very helpful and advice taken from mentor sessions was used during development of the app
+* Online resources including [python documenation](https://docs.python.org/3/library/dataclasses.html) for creating dataclasses
