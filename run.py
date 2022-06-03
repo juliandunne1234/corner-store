@@ -84,7 +84,7 @@ def current_shop_stock(s):
         print(f'#{id} : {row.item} : {row.quantity}')
         id += 1
     print("\n------------------")
-    print("SEE ABOVE: ITEM ID #, NAME, QUANTITY IN STOCK")
+    print("SEE ABOVE: ID #, ITEM, QUANTITY IN STOCK")
     print(f"THE CURRENT SHOP BALANCE IS €{round(s.balance, 2)}")
     print("------------------")
 
@@ -116,7 +116,7 @@ def new_customer_order(c):
         item_quantity = int(input("ENTER AMOUNT REQUIRED:\n"))
         worksheet_to_update.append_row([item_order, item_quantity])
 
-        shopping_complete = input("Is there anything else 'Y'/'N'?\n")
+        shopping_complete = input("Is there anything else 'Y'/'N'?\n").upper().strip()
         if shopping_complete == "Y":
             continue
         elif shopping_complete == "N":
@@ -135,7 +135,7 @@ def customer_order(c):
     Displays list of items and the quantity the customer has ordered
     """
     print("\n------------------")
-    print("Items and the quantity requried by the customer")
+    print("ITEMS AND QUANTITY REQUIRED BY THE CUSTOMER")
     print("------------------")
 
     for row in c.order:
