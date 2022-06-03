@@ -112,9 +112,13 @@ def new_customer_order(c):
 
     while True:
         id_check = input("\nSELECT ITEM FROM SHOP BY ENTERING ID#:\n")
-        item_order = order_check(id_check)
+        item_order = order_check(id_check, c)
+        if item_order == False:
+            break
         quant_check = input("ENTER THE QUANTITY YOU REQUIRE:\n")
-        item_quantity = order_check(quant_check)
+        item_quantity = order_check(quant_check, c)
+        if item_quantity == False:
+            break
         worksheet_to_update.append_row([item_order, item_quantity])
 
         shopping_complete = input("ANYTHING ELSE 'Y'/'N'?\n").upper().strip()
@@ -130,18 +134,19 @@ def new_customer_order(c):
                 break
 
 
-def order_check(int_check):
+def order_check(int_check, c):
     """
     Check to confirm id# and quantity are integer values
     If criteria not met then customer is notified
+    and False returned
     """
     if int_check.isdigit():
         int_check = int(int_check) 
         return int_check
     else:
         print("\nTHIS ORDER IS NOT VALID")
-        open_shop()
-
+        int_check = False
+        return int_check
 
 
 def customer_order(c):
@@ -149,7 +154,7 @@ def customer_order(c):
     Displays list of items and the quantity the customer has ordered
     """
     print("\n------------------")
-    print("ITEMS AND QUANTITY REQUIRED BY THE CUSTOMER")
+    print("ITEM ID# AND QUANTITY REQUIRED BY THE CUSTOMER")
     print("------------------")
 
     for row in c.order:
@@ -216,21 +221,19 @@ def execute_order(c, product_cost, stock_item, c_item):
 def open_shop():
     """
     Provide 3 options to the user:
-    1) See stock inventory
-    2) Input customer order
-    3) Complete existing online customer order
-    4) Restock the shop at a cost of 70% of the 
+    1) Display shop cash balance, current stock, prices & inventory
+    2) Create and process the customer order
+    3) Restock the shop at wholesale prices - cost is 70% of the 
         replaced items sale price
     """
     stock_shop = read_shop()
 
     while True:
         print("\n\t---CORNER STORE---")
-        print("\nPLEASE CHOOSE OPTION 1-4 TO PROCEED")
-        print("1) SHOP CONSUMABLES AND PRICES")
-        print("2) CREATE NEW CUSTOMER ORDER")
-        print("3) EXECUTE EXISTING ONLINE CUSTOMER ORDER")
-        print("4) RESTOCK THE SHOP SHELVES AT WHOLESALE DISCOUNT PRICE")
+        print("\nPLEASE CHOOSE OPTION 1-3 TO PROCEED")
+        print("1) CURRENT SHOP STOCK, PRICES & INVENTORY")
+        print("2) CREATE & PROCESS A NEW CUSTOMER ORDER")
+        print("3) RESTOCK DEPLETED SHOP STOCK AT WHOLESALE DISCOUNT PRICES")
         option_sel = input("\n")
 
         if option_sel == "1":
@@ -241,10 +244,6 @@ def open_shop():
             customer_order(cust_order)
             process_customer_order(cust_order, stock_shop)
         elif option_sel == "3":
-            online_order = read_customer('online_order')
-            customer_order(online_order)
-            process_customer_order(online_order, stock_shop)
-        elif option_sel == "4":
             restock_shop = read_shop()
             for rs_q, s_q in zip(restock_shop.stock, stock_shop.stock):
                 stock_required = rs_q.quantity - s_q.quantity
@@ -256,7 +255,6 @@ def open_shop():
             print("------------------")
             print("THE SHOP DOES NOT PROVIDE THIS SERVICE")
             print("------------------") 
-            open_shop()
 
 
 def main():
