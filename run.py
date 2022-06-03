@@ -234,8 +234,10 @@ def open_shop():
             current_shop_stock(stock_shop)
 
         else:
+            print("------------------")
             print("The shop does not provide this service")
-            break
+            print("------------------") 
+            open_shop()
 
 
 def main():
