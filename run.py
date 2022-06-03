@@ -111,18 +111,10 @@ def new_customer_order(c):
     current_shop_stock(c)
 
     while True:
-        item_order = input("\nSELECT ITEM FROM SHOP BY ENTERING ID#:\n")
-        if item_order.isdigit():
-            item_order = int(item_order) 
-        else:
-            print("\nTHIS ORDER IS NOT VALID")
-            break
-        item_quantity = input("ENTER THE QUANTITY YOU REQUIRE:\n")
-        if item_quantity.isdigit():
-            item_quantity = int(item_quantity) 
-        else:
-            print("\nTHIS QUANTITY IS NOT VALID")
-            break
+        id_check = input("\nSELECT ITEM FROM SHOP BY ENTERING ID#:\n")
+        item_order = order_check(id_check)
+        quant_check = input("ENTER THE QUANTITY YOU REQUIRE:\n")
+        item_quantity = order_check(quant_check)
         worksheet_to_update.append_row([item_order, item_quantity])
 
         shopping_complete = input("ANYTHING ELSE 'Y'/'N'?\n").upper().strip()
@@ -136,6 +128,20 @@ def new_customer_order(c):
             last_chance = input("\n")
             if last_chance != "Y":
                 break
+
+
+def order_check(int_check):
+    """
+    Check to confirm id# and quantity are integer values
+    If criteria not met then customer is notified
+    """
+    if int_check.isdigit():
+        int_check = int(int_check) 
+        return int_check
+    else:
+        print("\nTHIS ORDER IS NOT VALID")
+        open_shop()
+
 
 
 def customer_order(c):
