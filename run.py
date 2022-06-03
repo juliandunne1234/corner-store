@@ -111,11 +111,21 @@ def new_customer_order(c):
     current_shop_stock(c)
 
     while True:
-        item_order = int(input("ENTER ITEM #:\n"))
-        item_quantity = int(input("ENTER AMOUNT REQUIRED:\n"))
+        item_order = input("\nSELECT ITEM FROM SHOP BY ENTERING ID#:\n")
+        if item_order.isdigit():
+            item_order = int(item_order) 
+        else:
+            print("\nTHIS ORDER IS NOT VALID")
+            break
+        item_quantity = input("ENTER THE QUANTITY YOU REQUIRE:\n")
+        if item_quantity.isdigit():
+            item_quantity = int(item_quantity) 
+        else:
+            print("\nTHIS QUANTITY IS NOT VALID")
+            break
         worksheet_to_update.append_row([item_order, item_quantity])
 
-        shopping_complete = input("IS THERE ANYTHING ELSE 'Y'/'N'?\n").upper().strip()
+        shopping_complete = input("ANYTHING ELSE 'Y'/'N'?\n").upper().strip()
         if shopping_complete == "Y":
             continue
         elif shopping_complete == "N":
@@ -137,7 +147,7 @@ def customer_order(c):
     print("------------------")
 
     for row in c.order:
-        print(f'#{row.id} | quantity:{row.quantity}')
+        print(f'ID #{row.id} | QUANTITY:{row.quantity}')
     print("------------------\n")
 
 
@@ -163,14 +173,14 @@ def process_customer_order(c, s):
                     execute_order(c, product_cost, stock_item, cust_item)
 
     if not valid_order:
-        print("\nSorry we don't have anything you are looking for")
-        print("Please look at the current available stock or shop online\n")
+        print("\n------------------")
+        print("SORRY WE DO NOT HAVE WHAT YOU WANT")
 
     s.balance += (starting_cash - c.cash)
     print("\n------------------")
-    print(f"Total cost for customer is €{round((starting_cash - c.cash), 2)}.")
-    print(f"{c.name.upper()}, has €{round((c.cash), 2)} remaining.")
-    print(f"The shop balance is €{s.balance}.")
+    print(f"TOTAL COST FOR CUSTOMER IS €{round((starting_cash - c.cash), 2)}.")
+    print(f"{c.name.upper()}, HAS €{round((c.cash), 2)} REMAINING.")
+    print(f"THE SHOP BALANCE IS €{s.balance}.")
     print("------------------\n") 
 
 
@@ -185,15 +195,16 @@ def execute_order(c, product_cost, stock_item, c_item):
         c.cash -= product_cost
         stock_item.quantity -= c_item.quantity
         items_cost = stock_item.price * c_item.quantity
-        print(f"{stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
+        print(f"ID #{c_item.id}: {stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
     elif (product_cost > c.cash) & (c.cash >= stock_item.price):
         c_item.quantity = math.floor(c.cash / stock_item.price)
         c.cash -= c_item.quantity * stock_item.price
         stock_item.quantity -= c_item.quantity
         items_cost = stock_item.price * c_item.quantity
-        print(f"{stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
+        print(f"ID #{c_item.id}: {stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
     elif c.cash < stock_item.price:
-        print(F"You cannot afford to buy: {stock_item.item.upper()}")
+        print(F"\nSORRY YOU CANNOT AFFORD:")
+        print(F"ID #{c_item.id}: {stock_item.item.upper()}")
 
 
 def open_shop():
