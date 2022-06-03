@@ -50,7 +50,7 @@ def read_shop():
     """
     shop = Shop()
     create_shop_stock = SHEET.worksheet('current_stock').get_all_values()
-    shop.balance = float(create_shop_stock[0][0])
+    shop.balance = float(create_shop_stock[0][1])
     for row in create_shop_stock[1:]:
         product = ProductStock(int(row[0]), row[1], int(row[2]), float(row[3]))
         shop.stock.append(product)
@@ -207,15 +207,39 @@ def execute_order(c, product_cost, stock_item, c_item):
         stock_item.quantity -= c_item.quantity
         items_cost = stock_item.price * c_item.quantity
         print(f"ID #{c_item.id}: {stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
+        update_shop(stock_item.item, c_item.quantity, items_cost)
     elif (product_cost > c.cash) & (c.cash >= stock_item.price):
         c_item.quantity = math.floor(c.cash / stock_item.price)
         c.cash -= c_item.quantity * stock_item.price
         stock_item.quantity -= c_item.quantity
         items_cost = stock_item.price * c_item.quantity
         print(f"ID #{c_item.id}: {stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
+        update_shop(stock_item.item, c_item.quantity, items_cost)
     elif c.cash < stock_item.price:
         print(F"\nSORRY YOU CANNOT AFFORD:")
         print(F"ID #{c_item.id}: {stock_item.item.upper()}")
+
+def update_shop(i, q, i_c):
+    """
+    Update the shop balance and the stock inventory 
+    in the google spreadsheet current_stock for executed orders.
+    This is so the database remains up to date.
+    """
+    ws_shop_update = SHEET.worksheet('current_stock')
+    ws_shop = ws_shop_update.get_all_values()
+
+    shop_recieve = i_c
+    shop_balance = float(ws_shop[0][1]) + shop_recieve
+    shop_balance = str(shop_balance)
+    ws_shop_update.update_cell(1, 2, shop_balance)
+
+    for row in ws_shop:
+        if row[1] == i:
+            update_quant = int(row[2]) - q
+            update_quant = str(update_quant)
+            row = int(row[0]) + 1
+            col = 3
+            ws_shop_update.update_cell(row, col, update_quant)
 
 
 def open_shop():
