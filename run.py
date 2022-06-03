@@ -19,6 +19,7 @@ SHEET = GSPREAD_CLIENT.open('corner_store')
 
 @dataclass
 class ProductStock:
+    id: int
     item: str
     quantity: int
     price: float = 0.0
@@ -32,7 +33,7 @@ class Shop:
 
 @dataclass
 class ProductOrder:
-    item: str
+    id: int
     quantity: int
 
 
@@ -51,7 +52,7 @@ def read_shop():
     create_shop_stock = SHEET.worksheet('current_stock').get_all_values()
     shop.balance = float(create_shop_stock[0][0])
     for row in create_shop_stock[1:]:
-        product = ProductStock(row[0], int(row[1]), float(row[2]))
+        product = ProductStock(int(row[0]), row[1], int(row[2]), float(row[3]))
         shop.stock.append(product)
 
     return shop
@@ -66,7 +67,7 @@ def read_customer(filepath):
     customer = Customer(customer_info[0], float(customer_info[1]))
 
     for row in customer_order[1:]:
-        customer_product = ProductOrder(row[0], int(row[1]))
+        customer_product = ProductOrder(int(row[0]), int(row[1]))
         customer.order.append(customer_product)
 
     return customer
@@ -79,10 +80,8 @@ def current_shop_stock(s):
     """
     print("------------------")
     print("ID#: ITEM: IN STOCK")
-    id = 0
     for row in s.stock:
-        print(f'#{id} : {row.item} : {row.quantity}')
-        id += 1
+        print(f'#{row.id} : {row.item} : {row.quantity}')
     print("\n------------------")
     print("SEE ABOVE: ID #, ITEM, QUANTITY IN STOCK")
     print(f"THE CURRENT SHOP BALANCE IS €{round(s.balance, 2)}")
@@ -112,21 +111,20 @@ def new_customer_order(c):
     current_shop_stock(c)
 
     while True:
-        item_order = input("ENTER ITEM #:\n")
+        item_order = int(input("ENTER ITEM #:\n"))
         item_quantity = int(input("ENTER AMOUNT REQUIRED:\n"))
         worksheet_to_update.append_row([item_order, item_quantity])
 
-        shopping_complete = input("Is there anything else 'Y'/'N'?\n").upper().strip()
+        shopping_complete = input("IS THERE ANYTHING ELSE 'Y'/'N'?\n").upper().strip()
         if shopping_complete == "Y":
             continue
         elif shopping_complete == "N":
             break
         else:
-            print("Please select 'Y' or 'N'")
-            print("Is there anything else we can get you?")
-            last_chance = input()
+            print("\nINVALID OPTION")
+            print("PLEASE SELECT Y/N")
+            last_chance = input("\n")
             if last_chance != "Y":
-                print("Okay so that is not a Yes.")
                 break
 
 
@@ -139,7 +137,7 @@ def customer_order(c):
     print("------------------")
 
     for row in c.order:
-        print(f'{row.item} : {row.quantity}')
+        print(f'#{row.id} | quantity:{row.quantity}')
     print("------------------\n")
 
 
@@ -154,7 +152,7 @@ def process_customer_order(c, s):
     for cust_item in c.order:
         for stock_item in s.stock:
             product_cost = 0
-            if cust_item.item == stock_item.item:
+            if cust_item.id == stock_item.id:
                 valid_order = True
                 if cust_item.quantity <= stock_item.quantity:
                     product_cost += cust_item.quantity * stock_item.price
@@ -187,15 +185,15 @@ def execute_order(c, product_cost, stock_item, c_item):
         c.cash -= product_cost
         stock_item.quantity -= c_item.quantity
         items_cost = stock_item.price * c_item.quantity
-        print(f"{c_item.item} * {c_item.quantity} = €{round((items_cost), 2)}")
+        print(f"#{stock_item.item} * {c_item.quantity} = €{round((items_cost), 2)}")
     elif (product_cost > c.cash) & (c.cash >= stock_item.price):
         c_item.quantity = math.floor(c.cash / stock_item.price)
         c.cash -= c_item.quantity * stock_item.price
         stock_item.quantity -= c_item.quantity
         items_cost = stock_item.price * c_item.quantity
-        print(f"{c_item.item} * {c_item.quantity} = €{round((items_cost), 2)}")
+        print(f"{stock_item.item} * {c_item.quantity} = €{round((items_cost), 2)}")
     elif c.cash < stock_item.price:
-        print(F"You cannot afford to buy: {c_item.item}")
+        print(F"You cannot afford to buy: {stock_item.item}")
 
 
 def open_shop():
@@ -237,7 +235,6 @@ def open_shop():
                 s_q.quantity += stock_required
                 stock_shop.balance -= shop_cost
             current_shop_stock(stock_shop)
-
         else:
             print("------------------")
             print("The shop does not provide this service")
