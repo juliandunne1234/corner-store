@@ -77,17 +77,19 @@ def current_shop_stock(s):
     Displays the shop balance and a list of items
     for sale and the quantity currently in stock
     """
-    print("\n------------------")
-    print(f"The current shop balance is €{round(s.balance, 2)}")
-    print("Items available and quantity currently in stock")
     print("------------------")
-
+    print("ID#: ITEM: IN STOCK")
+    id = 0
     for row in s.stock:
-        print(f'{row.item} : {row.quantity}')
+        print(f'#{id} : {row.item} : {row.quantity}')
+        id += 1
+    print("\n------------------")
+    print("SEE ABOVE: ITEM ID #, NAME, QUANTITY IN STOCK")
+    print(f"THE CURRENT SHOP BALANCE IS €{round(s.balance, 2)}")
     print("------------------")
 
 
-def new_customer_order():
+def new_customer_order(c):
     """
     Write the customer name, cash balance and customer order to 
     the customer_order spreadsheet.
@@ -97,32 +99,35 @@ def new_customer_order():
     worksheet_to_update = SHEET.worksheet('customer_order')
     worksheet_to_update.clear()
 
+    customer_name = input("Hello, please enter your name:\n")
     try:
-        customer_name = input("Hello, please enter your name:\n")
         customer_balance = input("Please enter your cash balance in euros:\n")
         customer_details = [customer_name, float(customer_balance)]
-        worksheet_to_update.append_row(customer_details)
-
-        while True:
-            item_order = input("Please select item from shop stock:\n")
-            item_quantity = int(input("Please enter the amount you want:\n"))
-            worksheet_to_update.append_row([item_order, item_quantity])
-
-            shopping_complete = input("Is there anything else 'Y'/'N'?\n")
-            if shopping_complete == "Y":
-                continue
-            elif shopping_complete == "N":
-                break
-            else:
-                print("Please select 'Y' or 'N'")
-                print("Is there anything else we can get you?")
-                last_chance = input()
-                if last_chance != "Y":
-                    print("Okay so that is not a Yes.")
-                    break
     except ValueError:
         print("You have entered an invalid cash amount")
         open_shop()
+
+    worksheet_to_update.append_row(customer_details)
+
+    current_shop_stock(c)
+
+    while True:
+        item_order = input("ENTER ITEM #:\n")
+        item_quantity = int(input("ENTER AMOUNT REQUIRED:\n"))
+        worksheet_to_update.append_row([item_order, item_quantity])
+
+        shopping_complete = input("Is there anything else 'Y'/'N'?\n")
+        if shopping_complete == "Y":
+            continue
+        elif shopping_complete == "N":
+            break
+        else:
+            print("Please select 'Y' or 'N'")
+            print("Is there anything else we can get you?")
+            last_chance = input()
+            if last_chance != "Y":
+                print("Okay so that is not a Yes.")
+                break
 
 
 def customer_order(c):
@@ -216,7 +221,7 @@ def open_shop():
         if option_sel == "1":
             current_shop_stock(stock_shop)
         elif option_sel == "2":
-            new_customer_order()
+            new_customer_order(stock_shop)
             cust_order = read_customer('customer_order')
             customer_order(cust_order)
             process_customer_order(cust_order, stock_shop)
