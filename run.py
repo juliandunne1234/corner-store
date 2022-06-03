@@ -49,8 +49,10 @@ def read_shop():
     Stock the shop dataclass using the current_stock spreadsheet.
     """
     shop = Shop()
+    balance = SHEET.worksheet('shop_balance').get_all_values()
+    shop.balance = float(balance[0][1])
+
     create_shop_stock = SHEET.worksheet('current_stock').get_all_values()
-    shop.balance = float(create_shop_stock[0][1])
     for row in create_shop_stock[1:]:
         product = ProductStock(int(row[0]), row[1], int(row[2]), float(row[3]))
         shop.stock.append(product)
@@ -227,16 +229,17 @@ def update_shop(i, q, i_c):
     """
     ws_shop_update = SHEET.worksheet('current_stock')
     ws_shop = ws_shop_update.get_all_values()
+    ws_balance_update = SHEET.worksheet('shop_balance')
+    ws_balance = ws_balance_update.get_all_values()
 
     shop_recieve = i_c
-    shop_balance = float(ws_shop[0][1]) + shop_recieve
+    shop_balance = float(ws_balance[0][1]) + shop_recieve
     shop_balance = str(shop_balance)
-    ws_shop_update.update_cell(1, 2, shop_balance)
+    ws_balance_update.update_cell(1, 2, shop_balance)
 
     for row in ws_shop:
         if row[1] == i:
             update_quant = int(row[2]) - q
-            update_quant = str(update_quant)
             row = int(row[0]) + 1
             col = 3
             ws_shop_update.update_cell(row, col, update_quant)
@@ -267,18 +270,19 @@ def open_shop():
             cust_order = read_customer('customer_order')
             customer_order(cust_order)
             process_customer_order(cust_order, stock_shop)
-        elif option_sel == "3":
-            restock_shop = read_shop()
-            for rs_q, s_q in zip(restock_shop.stock, stock_shop.stock):
-                stock_required = rs_q.quantity - s_q.quantity
-                shop_cost = (stock_required * (s_q.price * 0.7))
-                s_q.quantity += stock_required
-                stock_shop.balance -= shop_cost
-            current_shop_stock(stock_shop)
-        else:
-            print("------------------")
-            print("THE SHOP DOES NOT PROVIDE THIS SERVICE")
-            print("------------------") 
+        # elif option_sel == "3":
+            # restock_shop = read_shop()
+            # for rs_q, s_q in zip(restock_shop.stock, stock_shop.stock):
+            #     stock_required = rs_q.quantity - s_q.quantity
+            #     shop_cost = (stock_required * (s_q.price * 0.7))
+            #     s_q.quantity += stock_required
+            #     stock_shop.balance -= shop_cost
+            # current_shop_stock(stock_shop)
+            
+        # else:
+        #     print("------------------")
+        #     print("THE SHOP DOES NOT PROVIDE THIS SERVICE")
+        #     print("------------------") 
 
 
 def main():
