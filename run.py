@@ -268,6 +268,7 @@ def restock():
 
     return restock_shop
 
+
 def default_shop(r_s, s_s):
     """
     Restock shop shelves and return dataclass current_stock spreadsheet
@@ -323,12 +324,13 @@ def open_shop():
             customer_order(cust_order)
             process_customer_order(cust_order, stock_shop)
         elif option_sel == "3":
+            print("\n------------------")
+            print("RESTOCKING SHOP...")
             r_s = restock()
-            default_shop(r_s, stock_shop)       
-
+            default_shop(r_s, stock_shop)
+            current_shop_stock(stock_shop)
             print("\nTHE SHOP HAS NOW BEEN RESTOCKED AT WHOLESALE PRICES")
             print("------------------")
-            
         else:
             print("------------------")
             print("THE SHOP DOES NOT PROVIDE THIS SERVICE")
