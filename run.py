@@ -44,6 +44,16 @@ class Customer:
     order: List[ProductOrder] = field(default_factory=list)
 
 
+@dataclass
+class RestockOrder:
+    id: int
+    name: str
+    quantity: int   
+
+@dataclass
+class Restock:
+    order: List[RestockOrder] = field(default_factory=list)
+
 def read_shop():
     """
     Stock the shop dataclass using the current_stock spreadsheet.
@@ -245,6 +255,48 @@ def update_shop(i, q, i_c):
             ws_shop_update.update_cell(row, col, update_quant)
 
 
+def restock():
+    """
+    Read the restock values from the restock_shop spreadsheet
+    """
+    restock_shop = Restock()
+
+    default_stock = SHEET.worksheet('restock_shop').get_all_values()
+    for row in default_stock:
+        product = RestockOrder(int(row[0]), row[1], int(row[2]))
+        restock_shop.order.append(product)
+
+    return restock_shop
+
+def default_shop(r_s, s_s):
+    """
+    Restock shop shelves and return dataclass current_stock spreadsheet
+    stock values to default values.
+    Update the shop balance as these items are purchased
+    from wholesaler at reduced price.
+    """
+    ws_shop_update = SHEET.worksheet('current_stock')
+    ws_shop = ws_shop_update.get_all_values()
+    ws_balance_update = SHEET.worksheet('shop_balance')
+    ws_balance = ws_balance_update.get_all_values()
+
+    for rs_q, s_q in zip(r_s.order, s_s.stock):
+        stock_required = rs_q.quantity - s_q.quantity
+        for row in ws_shop:
+            if row[1] == rs_q.name:
+                update_quant = int(row[2]) + stock_required
+                row = int(row[0]) + 1
+                col = 3
+                ws_shop_update.update_cell(row, col, update_quant)
+
+        shop_cost = (stock_required * (s_q.price * 0.7))
+        s_q.quantity += stock_required
+        s_s.balance -= shop_cost
+
+    shop_balance = str(s_s.balance)
+    ws_balance_update.update_cell(1, 2, shop_balance)
+
+
 def open_shop():
     """
     Provide 3 options to the user:
@@ -270,19 +322,17 @@ def open_shop():
             cust_order = read_customer('customer_order')
             customer_order(cust_order)
             process_customer_order(cust_order, stock_shop)
-        # elif option_sel == "3":
-            # restock_shop = read_shop()
-            # for rs_q, s_q in zip(restock_shop.stock, stock_shop.stock):
-            #     stock_required = rs_q.quantity - s_q.quantity
-            #     shop_cost = (stock_required * (s_q.price * 0.7))
-            #     s_q.quantity += stock_required
-            #     stock_shop.balance -= shop_cost
-            # current_shop_stock(stock_shop)
+        elif option_sel == "3":
+            r_s = restock()
+            default_shop(r_s, stock_shop)       
+
+            print("\nTHE SHOP HAS NOW BEEN RESTOCKED AT WHOLESALE PRICES")
+            print("------------------")
             
-        # else:
-        #     print("------------------")
-        #     print("THE SHOP DOES NOT PROVIDE THIS SERVICE")
-        #     print("------------------") 
+        else:
+            print("------------------")
+            print("THE SHOP DOES NOT PROVIDE THIS SERVICE")
+            print("------------------") 
 
 
 def main():
