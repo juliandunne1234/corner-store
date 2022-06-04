@@ -96,9 +96,7 @@ def current_shop_stock(s):
         print(f'#{row.id} : {row.item.upper()} : {row.quantity}')
     print("\n------------------")
     print("SEE ABOVE: ID #, ITEM, QUANTITY IN STOCK")
-    print(f"THE CURRENT SHOP BALANCE IS €{round(s.balance, 2)}")
-    print("------------------")
-
+    
 
 def new_customer_order(c):
     """
@@ -110,17 +108,21 @@ def new_customer_order(c):
     worksheet_to_update = SHEET.worksheet('customer_order')
     worksheet_to_update.clear()
 
-    customer_name = input("Hello, please enter your name:\n")
+    c_name = input("HELLO, PLEASE ENTER YOUR NAME:\n")
+    print(f"\nHELLO {c_name.upper()}, YOUR CORNER-STORE BALANCE IS €0.00")
+    print(f"PLEASE ENTER THE AMOUNT IN EUROS YOU WANT TO TOP UP BY")
     try:
-        customer_balance = input("Please enter your cash balance in euros:\n")
-        customer_details = [customer_name, float(customer_balance)]
+        customer_balance = input("\n")
+        customer_details = [c_name, float(customer_balance)]
     except ValueError:
-        print("You have entered an invalid cash amount")
+        print("YOU HAVE ENTERED AN INVALID CASH AMOUNT")
         open_shop()
 
     worksheet_to_update.append_row(customer_details)
 
     current_shop_stock(c)
+    print(f"{c_name.upper()} HAS €{customer_balance} CREDIT TO SPEND")
+    print("------------------")
 
     while True:
         id_check = input("\nSELECT ITEM FROM SHOP BY ENTERING ID#:\n")
@@ -181,7 +183,7 @@ def process_customer_order(c, s):
     starting_cash = c.cash
     valid_order = False
 
-    print("THE CUSTOMER CAN PURCHASE THE FOLLOWING:")
+    print("THE CUSTOMER PURCHASED THE FOLLOWING:")
     for cust_item in c.order:
         for stock_item in s.stock:
             product_cost = 0
@@ -218,14 +220,16 @@ def execute_order(c, product_cost, stock_item, c_item):
         c.cash -= product_cost
         stock_item.quantity -= c_item.quantity
         items_cost = stock_item.price * c_item.quantity
-        print(f"ID #{c_item.id}: {stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
+        print(f"ID #{c_item.id}|\
+        {stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
         update_shop(stock_item.item, c_item.quantity, items_cost)
     elif (product_cost > c.cash) & (c.cash >= stock_item.price):
         c_item.quantity = math.floor(c.cash / stock_item.price)
         c.cash -= c_item.quantity * stock_item.price
         stock_item.quantity -= c_item.quantity
         items_cost = stock_item.price * c_item.quantity
-        print(f"ID #{c_item.id}: {stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
+        print(f"ID #{c_item.id}|\
+        {stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
         update_shop(stock_item.item, c_item.quantity, items_cost)
     elif c.cash < stock_item.price:
         print(F"\nSORRY YOU CANNOT AFFORD:")
@@ -318,6 +322,8 @@ def open_shop():
 
         if option_sel == "1":
             current_shop_stock(stock_shop)
+            print(f"THE CURRENT SHOP BALANCE IS €{round(stock_shop.balance, 2)}")
+            print("------------------")
         elif option_sel == "2":
             new_customer_order(stock_shop)
             cust_order = read_customer('customer_order')
@@ -329,6 +335,8 @@ def open_shop():
             r_s = restock()
             default_shop(r_s, stock_shop)
             current_shop_stock(stock_shop)
+            print(f"THE CURRENT SHOP BALANCE IS €{round(stock_shop.balance, 2)}")
+            print("------------------")
             print("\nTHE SHOP HAS NOW BEEN RESTOCKED AT WHOLESALE PRICES")
             print("------------------")
         else:
