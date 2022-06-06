@@ -40,7 +40,7 @@ class ProductOrder:
 @dataclass
 class Customer:
     name: str
-    cash: float = 0.0
+    credit: float = 0.0
     order: List[ProductOrder] = field(default_factory=list)
 
 
@@ -48,15 +48,21 @@ class Customer:
 class RestockOrder:
     id: int
     name: str
-    quantity: int   
+    quantity: int
+
 
 @dataclass
 class Restock:
     order: List[RestockOrder] = field(default_factory=list)
 
+
 def read_shop():
     """
-    Stock the shop dataclass using the current_stock spreadsheet.
+    Stock the shop dataclass using the current_stock
+    google spreadsheet.
+    The first row in the spreadsheet is the current
+    shop balance in €'s.
+    The next rows contain the product ID#, item name, price and quantity
     """
     shop = Shop()
     balance = SHEET.worksheet('shop_balance').get_all_values()
@@ -72,7 +78,12 @@ def read_shop():
 
 def read_customer(filepath):
     """
-    Read the customer order from the customer_order spreadsheet
+    Read the customer order from the customer_order
+    google spreadsheet.
+    The first row in the spreadsheet includes the
+    customer name and their shop credit in €'s.
+    The next rows contain the product ID# and quantity
+    they require of that product.
     """
     customer_order = SHEET.worksheet(filepath).get_all_values()
     customer_info = customer_order[0]
@@ -87,8 +98,8 @@ def read_customer(filepath):
 
 def current_shop_stock(s):
     """
-    Displays the shop balance and a list of items
-    for sale and the quantity currently in stock
+    Displays the current shop balance and lists the items
+    for sale in the shop and the quantity currently in stock.
     """
     print("------------------")
     print("ID#: ITEM: IN STOCK")
@@ -96,42 +107,49 @@ def current_shop_stock(s):
         print(f'#{row.id} : {row.item.upper()} : {row.quantity}')
     print("\n------------------")
     print("SEE ABOVE: ID #, ITEM, QUANTITY IN STOCK")
-    
+
 
 def new_customer_order(c):
     """
-    Write the customer name, cash balance and customer order to 
-    the customer_order spreadsheet.
-    Customer can continue adding as many items as required.
+    Write the customer name, account credit and customer order to
+    the customer_order google spreadsheet.
+    The customer can continue adding as many items as required.
     Each new customer order will clear the previous one from the spreadsheet.
     """
     worksheet_to_update = SHEET.worksheet('customer_order')
     worksheet_to_update.clear()
 
-    c_name = input("HELLO, PLEASE ENTER YOUR NAME:\n")
+    # Customer can enter any name
+    c_name = input("HELLO, PLEASE ENTER YOUR LOGIN NAME:\n")
     print(f"\nHELLO {c_name.upper()}, YOUR CORNER-STORE BALANCE IS €0.00")
-    print(f"PLEASE ENTER THE AMOUNT IN EUROS YOU WANT TO TOP UP BY")
+    print(f"PLEASE ENTER THE AMOUNT IN EURO YOU WANT TO TOP UP BY")
+    # If the customer enters an invalid number return to shop menu
     try:
-        customer_balance = input("\n")
-        customer_details = [c_name, float(customer_balance)]
+        c_balance = float(input("\n"))
     except ValueError:
-        print("YOU HAVE ENTERED AN INVALID CASH AMOUNT")
+        print("TRANSACTION DECLINED - PLEASE TOP UP IN €'S ONLY")
         open_shop()
 
+    # Update worksheet with customer name and account credit
+    customer_details = [c_name, c_balance]
     worksheet_to_update.append_row(customer_details)
 
     current_shop_stock(c)
-    print(f"{c_name.upper()} HAS €{customer_balance} CREDIT TO SPEND")
+    print(f"{c_name.upper()} HAS €{round(c_balance, 2)} CREDIT TO SPEND")
     print("------------------")
 
+    """
+    Customer can order multiple items by selecting Y.
+    Loop breaks when customer selects N or enters invalid data.
+    """
     while True:
         id_check = input("\nSELECT ITEM FROM SHOP BY ENTERING ID#:\n")
         item_order = order_check(id_check, c)
-        if item_order == False:
+        if item_order is False:
             break
         quant_check = input("ENTER THE QUANTITY YOU REQUIRE:\n")
         item_quantity = order_check(quant_check, c)
-        if item_quantity == False:
+        if item_quantity is False:
             break
         worksheet_to_update.append_row([item_order, item_quantity])
 
@@ -143,19 +161,19 @@ def new_customer_order(c):
         else:
             print("\nINVALID OPTION")
             print("PLEASE SELECT Y/N")
-            last_chance = input("\n")
+            last_chance = input("\n").upper().strip()
             if last_chance != "Y":
                 break
 
 
 def order_check(int_check, c):
     """
-    Check to confirm id# and quantity are integer values
-    If criteria not met then customer is notified
-    and False returned
+    Check to confirm the product ID# and quantity entered
+    are integer values. If this criteria is not met then the
+    order is determined to be invalid.
     """
     if int_check.isdigit():
-        int_check = int(int_check) 
+        int_check = int(int_check)
         return int_check
     else:
         print("\nTHIS ORDER IS NOT VALID")
@@ -165,7 +183,7 @@ def order_check(int_check, c):
 
 def customer_order(c):
     """
-    Displays list of items and the quantity the customer has ordered
+    Displays list of items and the quantity the customer has ordered.
     """
     print("\n------------------")
     print("ITEM ID# AND QUANTITY REQUIRED BY THE CUSTOMER")
@@ -178,9 +196,13 @@ def customer_order(c):
 
 def process_customer_order(c, s):
     """
-    Process a new or existing customer order.
+    Process the customers order.
+    Code checks that the product ID# entered is available in store.
+    If True then the quantity required and the quantity in stock
+    are checked and the customer can then purchase the amount
+    required within their allowable account credit limit.
     """
-    starting_cash = c.cash
+    start_cred = c.credit
     valid_order = False
 
     print("THE CUSTOMER PURCHASED THE FOLLOWING:")
@@ -201,44 +223,43 @@ def process_customer_order(c, s):
         print("\n------------------")
         print("SORRY WE DO NOT HAVE WHAT YOU WANT")
 
-    s.balance += (starting_cash - c.cash)
+    s.balance += (start_cred - c.credit)
     print("\n------------------")
-    print(f"TOTAL COST FOR CUSTOMER IS €{round((starting_cash - c.cash), 2)}.")
-    print(f"{c.name.upper()}, HAS €{round((c.cash), 2)} REMAINING.")
+    print(f"TOTAL COST FOR CUSTOMER IS €{round((start_cred - c.credit), 2)}.")
+    print(f"{c.name.upper()}, HAS €{round((c.credit), 2)} REMAINING.")
     print(f"THE SHOP BALANCE IS €{s.balance}.")
-    print("------------------\n") 
+    print("------------------\n")
 
 
-def execute_order(c, product_cost, stock_item, c_item):
+def execute_order(c, p_cost, s_item, c_item):
     """
     Execute the customer order.
     If an order cannot be executed, tell the customer.
-    Reasons for not processing order include insufficient cash,
+    Reasons for not processing order include insufficient credit,
     insufficient stock or items not included in shop stock.
     """
-    if c.cash >= product_cost:
-        c.cash -= product_cost
-        stock_item.quantity -= c_item.quantity
-        items_cost = stock_item.price * c_item.quantity
-        print(f"ID #{c_item.id}|\
-        {stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
-        update_shop(stock_item.item, c_item.quantity, items_cost)
-    elif (product_cost > c.cash) & (c.cash >= stock_item.price):
-        c_item.quantity = math.floor(c.cash / stock_item.price)
-        c.cash -= c_item.quantity * stock_item.price
-        stock_item.quantity -= c_item.quantity
-        items_cost = stock_item.price * c_item.quantity
-        print(f"ID #{c_item.id}|\
-        {stock_item.item.upper()} * {c_item.quantity} = €{round((items_cost), 2)}")
-        update_shop(stock_item.item, c_item.quantity, items_cost)
-    elif c.cash < stock_item.price:
+    if c.credit >= p_cost:
+        c.credit -= p_cost
+        s_item.quantity -= c_item.quantity
+        items = round((s_item.price * c_item.quantity), 2)
+        print(f"#{c_item.id}|{s_item.item.upper()}*{c_item.quantity}=€{items}")
+        update_shop(s_item.item, c_item.quantity, items)
+    elif (p_cost > c.credit) & (c.credit >= s_item.price):
+        c_item.quantity = math.floor(c.credit / s_item.price)
+        c.credit -= c_item.quantity * s_item.price
+        s_item.quantity -= c_item.quantity
+        items = round((s_item.price * c_item.quantity), 2)
+        print(f"#{c_item.id}|{s_item.item.upper()}*{c_item.quantity}=€{items}")
+        update_shop(s_item.item, c_item.quantity, items)
+    elif c.credit < s_item.price:
         print(F"\nSORRY YOU CANNOT AFFORD:")
-        print(F"ID #{c_item.id}: {stock_item.item.upper()}")
+        print(F"ID #{c_item.id}: {s_item.item.upper()}")
+
 
 def update_shop(i, q, i_c):
     """
-    Update the shop balance and the stock inventory 
-    in the google spreadsheet current_stock for executed orders.
+    Update the shop balance and the stock inventory
+    in the current_stock google spreadsheet for executed orders.
     This is so the database remains up to date.
     """
     ws_shop_update = SHEET.worksheet('current_stock')
@@ -261,7 +282,7 @@ def update_shop(i, q, i_c):
 
 def restock():
     """
-    Read the restock values from the restock_shop spreadsheet
+    Read the restock values from the restock_shop google spreadsheet.
     """
     restock_shop = Restock()
 
@@ -275,10 +296,11 @@ def restock():
 
 def default_shop(r_s, s_s):
     """
-    Restock shop shelves and return dataclass current_stock spreadsheet
-    stock values to default values.
+    Restock shop shelves and update current_stock spreadsheet.
+    Stock quantityies are set to default values to indicate shelves
+    are fully stocked.
     Update the shop balance as these items are purchased
-    from wholesaler at reduced price.
+    from wholesaler at a reduced price of 70% of sale price.
     """
     ws_shop_update = SHEET.worksheet('current_stock')
     ws_shop = ws_shop_update.get_all_values()
@@ -307,7 +329,7 @@ def open_shop():
     Provide 3 options to the user:
     1) Display shop cash balance, current stock, prices & inventory
     2) Create and process the customer order
-    3) Restock the shop at wholesale prices - cost is 70% of the 
+    3) Restock the shop at wholesale prices - cost is 70% of the
         replaced items sale price
     """
     stock_shop = read_shop()
@@ -322,7 +344,7 @@ def open_shop():
 
         if option_sel == "1":
             current_shop_stock(stock_shop)
-            print(f"THE CURRENT SHOP BALANCE IS €{round(stock_shop.balance, 2)}")
+            print(f"CURRENT SHOP BALANCE IS €{round(stock_shop.balance, 2)}")
             print("------------------")
         elif option_sel == "2":
             new_customer_order(stock_shop)
@@ -335,14 +357,14 @@ def open_shop():
             r_s = restock()
             default_shop(r_s, stock_shop)
             current_shop_stock(stock_shop)
-            print(f"THE CURRENT SHOP BALANCE IS €{round(stock_shop.balance, 2)}")
+            print(f"CURRENT SHOP BALANCE IS €{round(stock_shop.balance, 2)}")
             print("------------------")
             print("\nTHE SHOP HAS NOW BEEN RESTOCKED AT WHOLESALE PRICES")
             print("------------------")
         else:
             print("------------------")
             print("THE SHOP DOES NOT PROVIDE THIS SERVICE")
-            print("------------------") 
+            print("------------------")
 
 
 def main():
